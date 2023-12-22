@@ -1,9 +1,7 @@
 import passport from 'passport';
 import User from '../models/user.model.js';
 import bcrypt from 'bcrypt';
-import UserServices from '../services/user.services.js';
-
-const userService = new UserServices();
+import userService from '../services/user.services.js';
 
 export default class UserController {
   async register(req, res, next) {

@@ -37,14 +37,14 @@ const mongoStoreOptions = {
 
 const products = [];
 
-app.use(passport.initialize());
-app.use(passport.session());
-
 app.use(express.json());
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 
 app.use(session(mongoStoreOptions));
+
+app.use(passport.initialize());
+app.use(passport.session());
 
 app.use(express.static(__dirname + '/public'));
 

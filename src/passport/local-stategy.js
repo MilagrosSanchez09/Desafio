@@ -10,20 +10,27 @@ const strategyOptions = {
 
 const register = async (req, email, password, done) => {
     try {
-        const user = await userService.getByEmail(email);
+        const user = await userService.findByEmail(email);
 
-        if (user) return done(null, false);
+        if (user) {
+            return done(null, false , { message: 'Email is already registered' });
+        }
 
         const newUser = await userService.register(req.body);
+
+        if (!newUser) {
+            return done(null, false, { message: 'Error during registration.' });
+        }
         return done(null, newUser);
     } catch (error) {
-        console.log(error);
+        console.log('Error during registration:', error);
+        return done(error);
     }
 };
 
 const login = async (req, email, password, done) => {
     try {
-        const user = await userService.getByEmail(email);
+        const user = await userService.findByEmail(email);
 
         if (!user) return done(null, false, { message: 'User not found' });
 
@@ -41,8 +48,8 @@ const login = async (req, email, password, done) => {
             res.status(401).json({ msg: 'Incorrect credentials' });
         }
     } catch (error) {
-        console.error('Authentication error:', error);
-        res.status(500).json({ msg: 'Authentication error' });
+        console.log('Authentication error: ', error);
+        res.status(500).json ({ msg: 'Authentication error' });
     }
 };
 
@@ -50,6 +57,7 @@ const registerStrategy = new LocalStrategy(strategyOptions, register);
 const loginStrategy = new LocalStrategy(strategyOptions, login);
 
 passport.use('login', loginStrategy);
+
 passport.use('register', registerStrategy);
 
 passport.serializeUser((user, done) => {

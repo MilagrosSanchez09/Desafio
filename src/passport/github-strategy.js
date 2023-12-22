@@ -3,8 +3,8 @@ import { Strategy as GithubStrategy } from 'passport-github2';
 import userService from '../services/user.services.js';
 
 const strategyOptions = {
-    clientID: 'Iv1.c166a54620005122',
-    clientSecret: '3e599fd8586091897bfe92473132d1ca7e159663',
+    clientID: '27003366ed31c059dce6',
+    clientSecret: '32fb09e0876d262aee48d4bc15d0781a58e84965',
     callbackURL: 'http://localhost:8080/users/github',
 };
 

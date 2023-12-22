@@ -1,6 +1,6 @@
 import User from "../models/user.model.js";
 
-export default class UserServices {
+class UserServices {
   async findByEmail(email) {
     return await User.findOne({ email });
   }
@@ -37,3 +37,8 @@ export default class UserServices {
     }
   }
 }
+
+
+const userService = new UserServices();
+
+export default userService;
