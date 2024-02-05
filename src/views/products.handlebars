@@ -1,0 +1,21 @@
+<h1>Products Page</h1>
+
+{{#if user}}
+<h2>Bienvenido, {{user.first_name}}!</h2>
+{{else}}
+<p>No has iniciado sesión</p>
+{{/if}}
+
+{{#if products.length}}
+<ul>
+    {{#each products}}
+    <li>
+        <strong>Producto:</strong> {{name}} <br>
+        <strong>Descripción:</strong> {{description}} <br>
+        <strong>Precio:</strong> {{price}} <br>
+    </li>
+    {{/each}}
+</ul>
+{{else}}
+<p>No hay productos disponibles</p>
+{{/if}}
