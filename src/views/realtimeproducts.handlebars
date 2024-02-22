@@ -1,41 +1,17 @@
-<h1>Realtime Products Page</h1>
-
-{{#if user}}
-    {{#ifEqual user.role 'admin'}}
-        <h2>Hello, Admin {{user.username}}!</h2>
-    {{else}}
-        <h2>Hello, User {{user.username}}!</h2>
-    {{/ifEqual}}
-{{else}}
-    <p>Please log in to access personalized content.</p>
-{{/if}}
-
-<ul>
-    {{#each products}}
-        <li>
-            Título: {{this.title}} - Autor: {{this.author}} - Descripción: {{this.description}} - Precio: {{this.price}}
-        </li>
-    {{/each}}
-</ul>
 
 <form id="form">
-    <label for="title">Título:</label>
-    <input type="text" id="title" name="title" required /><br /><br />
-
-    <label for="description">Descripción:</label>
-    <textarea id="description" name="description" required></textarea><br /><br />
-
-    <label for="price">Precio:</label>
-    <input type="number" id="price" name="price" required /><br /><br />
-
-    <label for="stock">Stock:</label>
-    <input type="number" id="stock" name="stock" required /><br /><br />
-
-    <label for="category">Category:</label>
-    <input type="text" id="category" name="category" required /><br /><br />
-
-    <input type="submit" value="Enviar" />
+    <label for="name" id="name">Nombre del producto: <input id="name" name="name" type="text" required placeholder="Nombre del producto"/></label>
+    <label for="description" id="description">Descripción: <input id="description" name="description" required type="text" placeholder="Ingresa la descripción"/></label>
+    <label for="code" id="code">Código: <input id="code" name="code" type="text" placeholder="Código" required/></label>
+    <label for="price" id="price">Precio: <input id="price" name="price" type="number" placeholder="Precio del producto" required/></label>
+    <label for="stock" id="stock">Stock: <input id="stock" name="stock" type="number" placeholder="stock" required/></label>
+    <label for="category" id="category">Categoría: <input id="category" name="category" type="text" placeholder="Categoría" required/></label>
+    <input type="submit" value="SEND" />
 </form>
 
+    <p id="products"></p>
+
+
+
 <script src="/socket.io/socket.io.js"></script>
-<script src="/js/index.js"></script>
+<script src="js/index.js"></script>

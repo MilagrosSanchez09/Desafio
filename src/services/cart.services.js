@@ -1,101 +1,116 @@
-import { CartDAO } from '../daos/mongodb/cart.dao.js';
-import ProductService from "./product.services.js";
-import TicketService from './ticket.services.js';
-import { CartModel } from '../daos/mongodb/models/cart.model.js';
+import Services from "./class.services.js";
+import persistence from "../persistence/persistence.js";
 
-export default class CartService {
-  constructor(ticketService) {
-    this.cartDAO = new CartDAO();
-    this.productService = new ProductService();
-    this.ticketService = ticketService;
-  }
-  
-  async getAllCarts() {
-    return await this.cartDAO.getAllCarts();
-  }
+const {cartDao, productDao} = persistence;
 
-  async createCart(cartData) {
-    try {
-      const newCart = new CartModel(cartData);
-      await newCart.save();
-      return newCart;
-    } catch (error){
-      console.error(error);
-      throw error;
-    }
-  }
+export default class CartService extends Services {
+    constructor(){
+        super(cartDao);
+    };
 
-  async deleteProductFromCart(cartId, productId) {
-    return await this.cartDAO.deleteProductFromCart(cartId, productId);
-  }
-
-  async saveProductToCart(cartId, arrProducts) {
-    try{
-        let cart = await this.cartDAO.findById(cartId);
-        if (arrProducts.products) {
-            arrProducts.products.forEach(idProduct => {
-                cart.products.push(idProduct);
-            });
+    async remove(id) {
+        try {
+          const cartDel = await cartDao.delete(id);
+          if (!cartDel) {
+            return false;
+          } else {
+            return cartDel;
+          }
+        } catch (error) {
+          console.log(error);
         }
-        await cart.save();
-        cart = await this.cartDAO.findById(cartId).populate('products');
-        return cart;
-    } catch (error){
-        console.error(error);
-        return null;
-    }
-  }
-
-  async addProductToCart(cartId, productId) {
-    try {
-      return await this.cartDAO.addProductToCart(cartId, productId);
-    } catch (error) {
-      console.error(error);
-      return null;
-    }
-  }
-
-  async updCartProductsAmount(cartId, productId, body) {
-    return await this.cartDAO.updCartProductsAmount(cartId, productId, body);
-  }
-
-  async purchaseCart(cartId) {
-    try {
-      const cart = await this.cartDAO.findById(cartId);
-
-      const productsNotPurchased = [];
-
-      for (const product of cart.products) {
-        const { productId, quantity } = product;
-
-        const existingProduct = await this.productService.getProductById(productId);
-
-        if (existingProduct.stock >= quantity) {
-          existingProduct.stock -= quantity;
-          await existingProduct.save();
-        }else {
-          productsNotPurchased.push(productId);
+      };
+      
+    
+    async addProdToCart(cartId, prodId) {
+      try {
+        const existCart = await cartDao.getById(cartId);
+        if (!existCart) {
+          return false;
         }
+        const existProd = await productDao.getById(prodId);
+        if (!existProd) {
+          return false;
+        }
+          //SI EXISTE, aumenta quantity++
+        const existProdInCart = existCart.products.find(
+          (p)=>{
+            return p.product._id.toString() === prodId.toString();
+          }
+        );
+        if(existProdInCart) {
+          existProdInCart.quantity++;
+          existCart.save();
+          return existProdInCart;
+        } else {
+          return await cartDao.addProdToCart(existCart, prodId);
+        }
+      } catch (error) {
+        console.log(error);
       }
-
-      const ticket = await this.ticketService.generateTicket(cartId);
-
-      cart.products = cart.products.filter(product => !productsNotPurchased.includes(product.productId));
-      await cart.save();
-
-      return { ticket, productsNotPurchased };
-    } catch (error) {
-      console.error('Error purchasing cart:', error);
-      throw error;
-    }
-  }
-
-  async getCartById(cartId) {
-    try {
-      return await CartModel.findById(cartId).populate('products');
-    } catch (error) {
-      console.error(error);
-      return null;
-    }
-  }
-}
+    };
+    
+    async removeProdToCart(cartId, prodId) {
+      try {
+          const existCart = await cartDao.getById(cartId);
+          console.log("existCart-->", existCart);
+  
+          if (!existCart) {
+              throw new Error("Cart not found");
+          }
+  
+          const existProd = await productDao.getById(prodId);
+          console.log("existProd-->", existProd);
+  
+          if (!existProd) {
+              throw new Error("Product not found");
+          }
+  
+          const existProdInCart = existCart.products.find((p) => p.product._id.toString() === prodId.toString());
+  
+          if (existProdInCart && existProdInCart.quantity > 0) {
+              existProdInCart.quantity--;
+              await existCart.save();
+              return existProdInCart;
+          } else {
+              return await cartDao.removeProdToCart(existCart, prodId);
+          }
+      } catch (error) {
+          console.log(error);
+          throw new Error("Error removing product from cart");
+      }
+  };
+  
+  
+    
+      async updateProdQuantityToCart (cartId, prodId, quantity) {
+        try {
+          const existCart = await getById(cartId);
+          console.log("existCart-->", existCart);
+          if (!existCart) return false;
+      
+          const existProd = existCart.products.find((p)=>p.product._id.toString() === prodId.toString());
+          console.log("existProd-->", existProd);
+          if (!existProd) return false;
+      
+          return await cartDao.updateProdQuantityToCart(existCart, existProd, quantity);
+        } catch (error) {
+          console.log(error);
+        }
+      };
+    
+      async clearCart(cartId) {
+        try {
+            const existCart = await cartDao.getById(cartId);
+            console.log("existCart-->", existCart);
+            if (!existCart){
+              return false;
+            } else {
+              return await cartDao.clearCart(existCart);
+            }
+        } catch (error) {
+            console.log(error);
+            throw new Error("Error clearing cart");
+        }
+    }    
+};

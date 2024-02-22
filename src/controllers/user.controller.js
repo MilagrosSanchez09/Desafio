@@ -1,90 +1,98 @@
-import passport from 'passport';
-import UserService from '../services/user.services.js';
+import Controllers from "./class.controller.js";
+import UserService from "../services/user.services.js";
+import { HttpResponse, errorsDictionary } from "../utils/http.response.js";
 
+const httpResponse = new HttpResponse()
 const userService = new UserService();
 
-export default class UserController {
-  async register(req, res, next) {
-    passport.authenticate('register', (err, user) => {
-      
-      if (err) {
-        console.log('Error during registration:', err);
-        return res.redirect('/views/register-error');
-      }
-      if (!user) {
-        console.log('Error or user already registered');
-        return res.redirect('/views/register-error');
-      }
+export default class UserController extends Controllers {
+    constructor() {
+        super(userService);
+    };
 
-      req.logIn(user, (err) =>{
-        if (err) {
-          console.log('Error during login after registration:', err);
-          return next(err);
+    register = async (req, res, next) => {
+        try {
+          console.log('Inicio del registro de usuario');
+            const newUser = await userService.register(req.body, true);
+            console.log('Nuevo usuario registrado:', newUser);
+            if(!newUser){
+              console.log('El usuario no se registró correctamente');
+              return httpResponse.Forbidden(res, errorsDictionary.ERROR_CREATE_USER);
+            }else {
+              console.log('El usuario se registró correctamente');
+              return httpResponse.Ok(res, newUser);
+            };
+        }catch(error){
+          console.log('Error durante el registro', error);
+            next(error);
+        };
+    };
+
+    login = async (req, res, next) => {
+      try {
+        const userExist = await userService.login(req.body);
+        if (!userExist) {
+          return(
+            httpResponse.Unauthorized(res, errorsDictionary.ERROR_LOGIN)
+          )
+        } else {
+          return (
+            httpResponse.Ok(res, userExist)
+          )
         }
-
-        console.log('User logged in succesfully after registration:', user);
-        return res.redirect('/products');
-        })
-    })(req, res, next);
-  };
-  async login(req, res, next) {
-    passport.authenticate('login', async (err, user, info) => {
-      if (err) {
-        return next(err);
+      } catch (error) {
+        next(error);
       }
-
-      if (!user) {
-        return res.status(401).json({ msg: info.message });
+    };
+    
+    profile = async (req, res, next) =>{
+      try{
+        const { first_name, last_name, email, role } = req.user;
+        return (
+          httpResponse.Ok(res, {
+            first_name,
+            last_name,
+            email,
+            role,
+            })
+        )
+      }catch(error){
+        next(error)
       }
+    };
 
-      req.session.user = {
-        loggedIn: true,
-        username: user.email,
-        role: user.email === config.admin.email ? 'admin' : 'usuario',
+  resetPassword = async (req, res, next) =>{
+    try{
+      const user = req.user;
+      const tokenReset = await userService.resetPassword(user);
+      if(tokenReset) {
+        res.cookie('tokenResetpass', tokenReset);
+        return (
+          httpResponse.Ok(res, {msg: 'Email sent'})
+        );
+      }else {
+        return (
+          httpResponse.ServerError(res, {msg: 'Email not sent'})
+        );
       };
+    }catch(error){
+      next(error);
+    };
+  };
 
-      req.logIn(user, (err) => {
-        if (err) {
-          return next(err);
-        }
-        res.redirect('/views/products');
-      });
-    })(req, res, next);
+  async updatePassword (req, res, next) {
+    try {
+      const user = req.user;
+      const { pass } = req.body;
+      const { tokenpass } = req.cookies;
+      if (!tokenpass)
+        return httpResponse.Forbidden(res, errorsDictionary.ERROR_TOKEN);
+      const updPass = await userService.updatePassword(user, pass);
+      if (!updPass) return httpResponse.NotFound(res, errorsDictionary.ERROR_PASSWORDL);
+      res.clearCookie("tokenpass");
+      return httpResponse.Ok(res, updPass);
+    } catch (error) {
+      next(error.message);
+    };
   };
-  async visit(req, res) {
-    req.session.user.count = req.session.user.count ? req.session.user.count +1 : 1;
-    res.json({
-      msg: `${req.session.user.username} ha visitado el sitio ${req.session.user.count} veces`,
-    });
-  };
-  async logout(req, res) {
-    req.logout();
-    res.redirect('/login');
-  };
-  async infoSession(req, res) {
-    res.send({
-      session: req.session,
-      sessionId: req.sessionID,
-      cookies: req.cookies,
-    });
-  };
-  async showRegisterForm(req, res) {
-    res.render('register');
-  };
-  async showProfile(req, res) {
-    const user = req.session.user;
-    res.render('profile', { user });
-  };
-  async showLoginForm(req, res) {
-    res.render('login');
-  };
-  async githubLogin(req, res, next) {
-    passport.authenticate('github', { scope: ['user:email'] })(req, res, next);
-  };
-  async githubCallback(req, res, next) {
-    passport.authenticate('github', {
-      failureRedirect: '/login',
-      successRedirect: '/views/realtimeproducts',
-    })(req, res, next);
-  }
-}
+};

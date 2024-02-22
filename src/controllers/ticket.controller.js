@@ -1,47 +1,31 @@
+import Controllers from "./class.controller.js";
 import TicketService from "../services/ticket.services.js";
-import CartService from "../services/cart.services.js";
+import { HttpResponse } from "../utils/http.response.js";
 
-class TicketController {
-  constructor() {
-    this.ticketService = new TicketService();
-    this.cartService = new CartService();
-  }
+const httpResponse = new HttpResponse();
+const service = new TicketService();
 
-  async generateTicket(req, res, next) {
-    try {
-      const cart = await this.cartService.getCartById(req.params.cid);
-      const purchaser = req.body.purchaser;
-      const amount = req.body.amount;
+export default class TicketController extends Controllers {
+    constructor(){
+        super(service);
+    };
 
-      const generatedTicket = await this.ticketService.generateTicket(cart, purchaser, amount);
-
-      const jsonString = JSON.stringify(generatedTicket, (key, value) => {
-        if (key === 'someCircularProperty') {
-          return 'Circular reference found';
-        }
-        return value
-      });
-
-      return res.json(JSON.parse(jsonString));
-    } catch (error) {
-      next(error);
-    }
-  }
-  
-  async getTicketById(req, res, next) {
-    try {
-      const { ticketId } = req.params;
-      const ticket = await this.ticketService.getTicketById(ticketId);
-
-      if (ticket) {
-        res.json(ticket);
-      } else {
-        res.status(404).json({ msg: "Ticket no encontrado." });
-      }
-    } catch (error) {
-      next(error);
-    }
-  }
-}
-
-export default TicketController;
+    generateTicket = async (req, res, next) => {
+        try {
+          const { _id } = req.user;
+          const { cartId } = req.params;
+          const ticket = await service.generateTicket(_id, cartId);
+          if(!ticket) {
+            return (
+              httpResponse.NotFound(res, 'Error generate ticket')
+            )
+          } else {
+            return (
+              httpResponse.Ok(res, ticket)
+            )
+          };
+        } catch (error) {
+          next(error);
+        };
+      };
+};

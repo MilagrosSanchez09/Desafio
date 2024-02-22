@@ -1,41 +1,62 @@
-import { ProductDAO } from '../daos/mongodb/product.dao.js';
+import Services from "./class.services.js";
+import persistence from "../persistence/persistence.js";
+const { productDao } = persistence;
+import { generateProduct } from "../utils/utils.js";
+import ProductRepository from "../persistence/repository/product/product.repository.js";
 
-class ProductService {
-  static async getAllProducts() {
-    return await ProductDAO.getAllProducts();
-  }
+const productRepository = new ProductRepository()
 
-  static async getProductById(productId) {
-    return await ProductDAO.getProductById(productId);
-  }
 
-  static async createProduct(productData) {
-    return await ProductDAO.createProduct(productData);
-  }
+export default class ProductService extends Services {
+    constructor() {
+        super(productDao);
+    };
 
-  static async updateProduct(productId, newData) {
-    return await ProductDAO.updateProduct(productId, newData);
-  }
-
-  static async deleteProduct(productId) {
-    return await ProductDAO.deleteProduct(productId);
-  }
-
-  static async generateMockedProducts() {
-    const mockedProducts = [];
-    for (let i = 1; i <= 100; i++) {
-      const newProductData = {
-        name: `Mocked Product ${i}`,
-        description: `Descripción para el Producto ${i}`,
-        price: Math.random() * 100,
-        stock: Math.floor(Math.random() * 100),
-        category: `Categoría ${i}`,
-      };
-
-      mockedProducts.push(newProductData);
+    async generateMockedProducts() {
+        const mockedProducts = [];
+        for (let i = 1; i <= 100; i++) {
+            const newProductData = {
+                product_name: `Mocked Product ${i}`,
+                product_description: `Descripción para el Producto ${i}`,
+                product_price: Math.random() * 100,
+                product_stock: Math.floor(Math.random() * 100),
+            };
+            mockedProducts.push(newProductData);
+        }
+        return await productDao.generateMockedProducts();
     }
-    return mockedProducts;
-  }
-};
+    
+    async createProduct(product) {
+        try {
+            const newProduct = await productRepository.createProduct(product);
+            if (!newProduct) {
+                return (
+                    false
+                )
+            } else {
+                return (
+                    newProduct
+                )
+            };
+        } catch (error) {
+            throw new Error(error.message);
+        };
+    };
 
-export default ProductService;
+    async getProductById(id) {
+        try {
+            const product = await productRepository.getProductById(id);
+            if (!product) {
+                return (
+                    false
+                )
+            } else {
+                return (
+                    product
+                )
+            };
+        } catch (error) {
+            throw new Error(error.message);
+        };
+    };
+};

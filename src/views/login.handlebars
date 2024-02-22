@@ -1,32 +1,12 @@
-<!DOCTYPE html>
-<html lang="en">
+<h1>LOGIN</h1>
 
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Login</title>
-</head>
+<form action="/api/users/login" method="post">
+  Email:
+  <input type="email" name="email" id="email" />
+  Password:
+  <input type="password" name="password" id="password" />
+  <input type="submit" value="LOGIN" />
+</form>
 
-<body>
-  <h1>Login</h1>
-  {{#if message}}
-  <p>{{message}}</p>
-  {{/if}}
-  <form action="/users/login" method="post" autocomplete="off">
-
-    <label for="email">Email:</label>
-    <input type="email" name="email" id="email" />
-
-    <label for="password">Password:</label>
-    <input type="password" name="password" id="password" />
-
-    <input type="submit" value="LOGIN" />
-  </form>
-  <hr>
-  <a href="/user/auth/github"> Login with GitHub</a>
-
-  <h2>¿USUARIO NUEVO?</h2>
-  <button id="registerButton">Ir a registro</button>
-</body>
-
-</html>
+<h2>¿No te has registrado?</h2>
+<button onclick= "location.href='/views/register'" >Registrarse</button>

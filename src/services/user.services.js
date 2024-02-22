@@ -1,38 +1,61 @@
-import bcrypt from 'bcrypt';
-import handlebars from "handlebars";
-import UserDAO from '../daos/mongodb/user.dao.js';
-import config from "../config.js";
-import 'dotenv/config';
-import DAOFactory from '../daos/daoFactory.js';
+import Services from "./class.services.js";
+import persistence from "../persistence/persistence.js";
+import { sendMail } from "./mailing.user.services.js";
 
-class UserService {
-  constructor(){
-    this.userDAO = DAOFactory.getUserDAO();
-  }
-  async login(email, password) {
-    const user = await this.userDAO.findByEmail(email);
+const { userDao } = persistence;
 
-    if (!user) {
-      return null;
+export default class UserService extends Services {
+    constructor() {
+        super(userDao);
+        this.dao = userDao;
+        console.log('UserDao in constructor:', userDao);
+        console.log('this.dao in constructor:', this.dao);
     }
 
-    const cleanPassword = password.trim();
-    const passwordMatch = await bcrypt.compare(cleanPassword, user.password);
+    async register (user) {
+        try{
+            console.log('UserDao inregister:', userDao);
+            const response = await this.dao.register(user);
+            return response;
+        }catch(error) {
+            throw new Error(error.message);
+        };
+    };
 
-    return passwordMatch ? user : null;
-  }
+    async login (user) {
+        try {
+          const userExist = await this.dao.login(user);
+          return userExist;
+        } catch (error) {
+          throw new Error(error.message);
+        };
+      };
 
-  async getByEmail(email) {
-    return await this.userDAO.findByEmail(email);
-  }
-
-  async getById(id) {
-    return await this.userDAO.getById(id);
-  }
-
-  async register(userData) {
-    return await this.userDAO.register(userData);
-  }
-}
-
-export default UserService;
+    async resetPassword (user) {
+      try{
+        const token = await this.dao.resetPassword(user);
+        if(token){
+          return await sendMail(user, 'resetPassword', token);
+        }else {
+          return false;
+        };
+      }catch(error){
+        throw new Error(error.message);
+      };
+    };
+    
+    async updatePassword (user, password) {
+      try{
+          const response = await this.dao.updatePassword(user, password);
+          if(!response){
+              return false
+          }else {
+              return (
+                  response
+              );
+          };
+      }catch(error){
+          throw new Error(error.menssage);
+      };
+  };  
+};
