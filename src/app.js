@@ -11,6 +11,8 @@ import viewsRouter from "./routes/views.router.js";
 import cookieParser from "cookie-parser";
 import config from "./config/config.js";
 import { initMongoDB } from "./config/connection.js";
+import { apiDoc } from "./docs/info.js";
+import swaggerUi from "swagger-ui-express";
 import { error } from "console";
 import path from "path";
 
@@ -38,6 +40,8 @@ initMongoDB().then(() => {
   app.use('/api', mainRouter.getRouter());
   app.use('/views', viewsRouter);
   app.use(errorHandler);
+
+  app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(apiDoc));
   
   const PORT = config.PORT;
   
