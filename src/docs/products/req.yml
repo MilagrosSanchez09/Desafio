@@ -1,0 +1,33 @@
+components:
+  parameters:
+    schemas:
+      BodyNewProduct:
+        type: object
+        required:
+          - product_name
+          - product_description
+          - product_price
+          - product_stock
+          - product_owner
+        properties:
+          product_name:
+            type: string
+            description: Nombre del producto
+          product_description:
+            type: string
+            description: Descripción del producto
+          product_price:
+            type: number
+            description: Precio del producto
+          product_stock:
+            type: number
+            description: Stock del producto
+          product_owner:
+            type: string
+            description: ID del propietario del producto
+        example:
+          product_name: Producto de ejemplo
+          product_description: Esta es una descripción de ejemplo para el producto.
+          product_price: 99.99
+          product_stock: 100
+          product_owner: ID_del_propietario_del_producto

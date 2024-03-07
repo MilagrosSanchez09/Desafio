@@ -1,0 +1,19 @@
+components:
+  parameters:
+    schemas:
+      BodyNewCart:
+        description: Para crear un nuevo carrito, el body va vacío
+        type: object
+        example: {}
+      BodyUpdateCart:
+        description: Datos para actualizar un carrito
+        type: object
+        properties:
+          quantity:
+            type: number
+            description: Nueva cantidad del producto en el carrito
+          product:
+            $ref: '../products/res.yml#/components/schemas/Product'
+        required:
+          - quantity
+          - product

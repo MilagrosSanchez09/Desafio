@@ -1,14 +1,16 @@
-import swaggerJSDoc from "swagger-jsdoc";
+import swaggerJSDoc from 'swagger-jsdoc';
 
-const swaggerOptions = {
-    swaggerDefinition: {
+export const info = {
+    definition: {
+        openapi: '3.0.0',
         info: {
-            title: "API",
-            version: "1.0.0",
-            description: "Documentación del proyecto",
+            title: 'API',
+            version: '1.0.0',
+            description: 'Documentación de mi proyecto',
         },
     },
-    apis: ["../routes/products.router.js", "../routes/carts.router.js"],
-};
+    apis: ['./src/docs/*/.yml'],
+}
 
-export const apiDoc = swaggerJSDoc(swaggerOptions);
+
+export const apiDoc = swaggerJSDoc(info);

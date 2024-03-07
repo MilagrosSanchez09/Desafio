@@ -1,4 +1,5 @@
 import fs from "fs";
+import { logger } from "../../../../utils/logger.js";
 
 export default class ProductFSDao {
   constructor(path) {
@@ -24,7 +25,7 @@ export default class ProductFSDao {
         return [];
       }
     } catch (error) {
-      console.log(error);
+      logger.error(`Error al obtener todos los producots: ${error}`);
     }
   }
 
@@ -37,7 +38,7 @@ export default class ProductFSDao {
       }
       return false;
     } catch (error) {
-      console.log(error);
+      logger.error(`Error al obtener el producto por ID: ${id}, error: ${error}`);
     }
   }
 
@@ -52,7 +53,7 @@ export default class ProductFSDao {
       await fs.promises.writeFile(this.path, JSON.stringify(itemsFile));
       return item;
     } catch (error) {
-      console.log(error);
+      logger.error(`Error al crear el producto: ${error}`);
     }
   }
 
@@ -60,7 +61,6 @@ export default class ProductFSDao {
     try {
       const itemsFile = await this.getAll();
       const index = itemsFile.findIndex((item) => item.id === id);
-      console.log("index:::", index);
       if (index === -1) {
         throw new Error(`Id ${id} not found`);
       } else {
@@ -68,7 +68,7 @@ export default class ProductFSDao {
       }
       await fs.promises.writeFile(this.path, JSON.stringify(itemsFile));
     } catch (error) {
-      console.log(error);
+      logger.error(`Error al actualizar el producto con ID ${id}: ${error} `);
     }
   }
 
@@ -82,7 +82,7 @@ export default class ProductFSDao {
         throw new Error(`Item id: ${id} not found`);
       }
     } catch (error) {
-      console.log(error);
+      logger.error(`Error al eliminar el producto con ID ${id}: ${error}`);
     }
   }
 }

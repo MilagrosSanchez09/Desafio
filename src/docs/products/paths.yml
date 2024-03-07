@@ -1,0 +1,147 @@
+paths:
+  /products:
+    get:
+      summary: Obtiene todos los productos
+      responses:
+        '200':
+          description: Lista de productos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schema/Products/ProductListSuccess'
+        '404':
+          description: Productos no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schema/Products/ProductNotFound'
+        '500':
+          description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schema/Products/InternalServerError'
+    post:
+      summary: Crea un nuevo producto.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/parameters/schemas/BodyNewProduct'
+        required: true
+      responses:
+        '201':
+          description: Producto creado con éxito
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schema/Products/ProductCreated'
+        '400':
+          description: Error en la carga de datos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schema/Products/BadRequest'
+        '500':
+          description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schema/Products/InternalServerError'
+  /products/{id}:
+    get:
+      summary: Obtiene un producto por su ID.
+      parameters:
+        - name: id
+          in: path
+          description: ID del producto
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Se encontró el producto con éxito.
+          content: 
+            application/json:
+              schema:
+                $ref: '#/components/schema/Products/ProductSuccess'
+        '404':
+          description: Producto no encontrado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schema/Products/ProductNotFound'
+        '500':
+          description: Error interno del servidor
+          content:
+            application/json:
+            schema:
+              $ref: '#/components/schema/Products/InternalServerError'
+    put:
+      summary: Actualiza un producto por su ID
+      parameters:
+        - name: id
+          in: path 
+          description: ID del producto a actualizar
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schema/Product/NewProduct'
+        required: true
+      responses:
+        '200':
+          description: Producto actualizado con éxito
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schema/Products/ProductUpdated'
+        '400':
+          description: Error en la carga de datos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schema/Products/BadRequest'
+        '404':
+          description: Producto no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schema/Products/ProductNotFound'
+        '500':
+          description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schema/Products/InternalServerError'    
+    delete:
+      summary: Elimina un producto por su ID.
+      parameters:
+        - name: id
+          in: path 
+          description: ID del producto a eliminar
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Producto eliminado con éxito
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schema/Products/ProductDeleted'
+        '404':
+          description: Producto no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schema/Products/ProductNotFound'
+        '500':
+          description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schema/Products/InternalServerError'

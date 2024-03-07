@@ -1,4 +1,5 @@
 import { ProductModel } from "./products/product.model.js";
+import { logger } from "../../../utils/logger.js";
 
 export default class MongoDao {
     constructor(model) {
@@ -9,61 +10,65 @@ export default class MongoDao {
         try {
             const response = await this.model.find({});
             return response;
-        }catch (error) {
-            console.log(error);
+        } catch (error) {
+            logger.error(`Error al obtener todos los elementos: ${error}`);
         };
     };
 
     async getById(id) {
-        try{
+        try {
             const response = await this.model.findById(id);
             return response;
-        }catch(error){
-            console.log(error);
+        } catch (error) {
+            logger.error(`Error al obtener el elemento pod ID: ${id}, error: ${error}`);
         };
     };
 
     async create(obj) {
-        try{
+        try {
             const response = await this.model.create(obj);
             return response;
-        }catch(error){
-            console.log(error);
+        } catch (error) {
+            logger.error(`Error al crear el elemento: ${error}`);
         };
     };
 
     async update(id, obj) {
-        try{
-            const response = await this.model.updateOne({_id: id}, obj);
+        try {
+            const response = await this.model.updateOne({ _id: id }, obj);
             return response;
-        }catch(error){
-            console.log(error);
+        } catch (error) {
+            logger.error(`Error al actualizar el elementos con ID ${id}: ${error}`);
         };
     };
 
     async delete(id) {
-        try{
+        try {
             const response = await this.model.findByIdAndDelete(id);
             return response;
-        }catch(error){
-            console.log(error);
+        } catch (error) {
+            logger.error(`Error al eliminar el elemento con ID ${id}: ${error}`);
         };
     };
 
     async generateMockedProducts() {
-        const mockedProducts = [];
-    
-        for (let i = 1; i <= 100; i++){
-          const newProductData = {
-            product_name: `Mocked Product ${i}`,
-            product_description: `Descripción para el Producto ${i}`,
-            product_price: Math.random() * 100,
-            product_stock: Math.floor(Math.random() * 100),
-          };
-    
-          mockedProducts.push(newProductData);
+        try {
+            const mockedProducts = [];
+
+            for (let i = 1; i <= 100; i++) {
+                const newProductData = {
+                    product_name: `Mocked Product ${i}`,
+                    product_description: `Descripción para el Producto ${i}`,
+                    product_price: Math.random() * 100,
+                    product_stock: Math.floor(Math.random() * 100),
+                };
+
+                mockedProducts.push(newProductData);
+            }
+
+            return await ProductModel.insertMany(mockedProducts);
+        } catch (error){
+            logger.error(`Error al generar productos simulados: ${error}`);
         }
-    
-        return await ProductModel.insertMany(mockedProducts);
     }
 };

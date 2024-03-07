@@ -12,16 +12,14 @@ import cookieParser from "cookie-parser";
 import config from "./config/config.js";
 import { initMongoDB } from "./config/connection.js";
 import { apiDoc } from "./docs/info.js";
-import swaggerUi from "swagger-ui-express";
-import { error } from "console";
-import path from "path";
+import swaggerUi from 'swagger-ui-express';
 
 initMongoDB().then(() => {
   const mainRouter = new MainRouter();
   const app = express();
   
   app.use(session(mongoStoreOptions));
-  
+
   app.use(passport.initialize());
   app.use(passport.session());
   
@@ -33,19 +31,44 @@ initMongoDB().then(() => {
   app.use(cookieParser(config.SECRET_COOKIES))
   app.use(express.urlencoded({extended: true}));
   app.use(morgan('dev'));
+
   app.use('/loggerTest', (req, res) => {
-      logger.error("error en el endpoint de prueba");
-      res.send("probando logger");
+    const { level } = req.query;
+    switch(level) {
+      case 'debug':
+        logger.debug("DEBUG en endpoint de prueba");
+        break;
+      case 'http':
+        logger.http("HTTP en endpoint de prueba");
+        break;
+      case 'info':
+        logger.info("INFO en endpoint de prueba");
+        break;
+      case 'warning':
+        logger.warning("WARN en endpoint de prueba");
+        break;
+      case 'error':
+        logger.error("ERROR en endpoint de prueba");
+        break;
+      case 'fatal':
+        logger.fatal("FATAL en endpoint de prueba");
+        break;
+      default:
+        logger.info("Nivel de log no válido");
+        break;
+    }
+      res.send("Probando logger");
     })
+
   app.use('/api', mainRouter.getRouter());
   app.use('/views', viewsRouter);
+  
   app.use(errorHandler);
-
+  
   app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(apiDoc));
   
-  const PORT = config.PORT;
-  
+  const PORT = config.PORT;  
   app.listen(PORT, ()=> logger.info(`SERVER UP ON PORT: ${PORT}`));  
 }).catch(error => {
-  console.error("Error conectando a MongoDB:", error);
+  logger.error("Error conectando a MongoDB:", error);
 });

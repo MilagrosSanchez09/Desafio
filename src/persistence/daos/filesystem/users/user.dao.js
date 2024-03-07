@@ -1,4 +1,6 @@
 import fs from "fs";
+import { logger } from "../../../../utils/logger.js";
+import e from "express";
 
 export default class UserFSDao {
   constructor(path) {
@@ -24,7 +26,7 @@ export default class UserFSDao {
         return [];
       }
     } catch (error) {
-      console.log(error);
+      logger.error(`Error al obtener todos los usuarios: ${error}`);
     }
   }
 
@@ -37,7 +39,7 @@ export default class UserFSDao {
       }
       return false;
     } catch (error) {
-      console.log(error);
+      logger.error(`Error al obtener el usuario por ID: ${id}, error: ${error}`);
     }
   }
 
@@ -52,7 +54,7 @@ export default class UserFSDao {
       await fs.promises.writeFile(this.path, JSON.stringify(itemsFile));
       return item;
     } catch (error) {
-      console.log(error);
+      logger.error(`Error al crear el usuaario: ${error}`);
     }
   }
 
@@ -60,7 +62,6 @@ export default class UserFSDao {
     try {
       const itemsFile = await this.getAll();
       const index = itemsFile.findIndex((item) => item.id === id);
-      console.log("index:::", index);
       if (index === -1) {
         throw new Error(`Id ${id} not found`);
       } else {
@@ -68,7 +69,7 @@ export default class UserFSDao {
       }
       await fs.promises.writeFile(this.path, JSON.stringify(itemsFile));
     } catch (error) {
-      console.log(error);
+      logger.error(`Error al actualizar el usuario con ID ${id}: ${error}`);
     }
   }
 
@@ -82,7 +83,7 @@ export default class UserFSDao {
         throw new Error(`Item id: ${id} not found`);
       }
     } catch (error) {
-      console.log(error);
+      logger.error(`Error al eliminar el usuario con ID ${id}: ${error}`);
     }
   }
 }

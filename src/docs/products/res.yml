@@ -1,0 +1,93 @@
+components:
+  schema:
+    Products:
+      NewProduct:
+        type: object
+        properties:
+          id:
+            type: string
+            description: ID del producto
+          product_name:
+            type: string
+            description: Nombre del producto
+          product_description:
+            type: string
+            description: Descripción del producto
+          product_price:
+            type: number
+            description: Precio del producto
+          product_stock:
+            type: integer
+            description: Stock del producto
+        example: 
+          id: 65d4eacec0c029e25e2fbcef
+          product_name: "La duquesa"
+          product_description: "Ficción - Novela Rosa -Danielle Steel"
+          product_price: 4799
+          product_stock: 30    
+      ProductListSuccess:
+        type: array
+        items:
+          properties:
+            id:
+              type: string
+              description: ID del producto
+            product_name:
+              type: string
+              description: Nombre del producto
+            product_description:
+              type: string
+              description: Descripción del producto
+            product_price:
+              type: number
+              description: Precio del producto
+            product_stock:
+              type: number
+              description: Stock del producto
+            product_owner:
+              type: string
+              description: Creador del producto
+      ProductSuccess:
+        type: object
+        properties:
+          message:
+            type: string
+            description: Producto encontrado con éxito
+          product:
+            $ref: '#/components/schemas/Product'
+      ProductCreated:
+        type: object
+        properties:
+          message:
+            type: string
+            description: Producto creado con éxito
+      ProductUpdated:
+        type: object
+        properties:
+          message:
+            type: string
+            description: Producto actualizado con éxito
+      ProductDeleted:
+        type: object
+        properties:
+          message:
+            type: string
+            description: Producto eliminado con éxito
+      BadRequest:
+        type: object
+        properties:
+          message:
+            type: string
+            description: Error en los datos proporcionados
+      ProductNotFound:
+        type: object
+        properties:
+          message:
+            type: string
+            description: Producto no encontrado
+      InternalServerError:
+        type: object
+        properties:
+          message:
+            type: string
+          description: Error interno del servidor

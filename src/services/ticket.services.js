@@ -1,6 +1,7 @@
 import Services from "./class.services.js";
 import persistence from "../persistence/persistence.js";
 import { v4 as uuidv4 } from 'uuid';
+import { logger } from "../utils/logger.js";
 
 const { ticketDao, userDao, productDao, cartDao } = persistence;
 
@@ -14,12 +15,14 @@ export default class TicketService extends Services {
       const user = await userDao.getById(userId);
 
       if (!user) {
+        logger.error(`Usuario no encontrado con ID: ${userId}`);
         return false;
       }
 
       const cart = await cartDao.getById(cartId);
 
       if (!cart) {
+        logger.error(`Carrito no encontrado con ID: ${cartId}`);
         return false;
       }
 
@@ -54,8 +57,10 @@ export default class TicketService extends Services {
 
       cart.products = [];
       cart.save();
+      logger.info(`Ticket generado: ${ticket}`);
       return ticket;
     } catch (error) {
+      logger.error(`Error al generar el ticket: ${error.message}`);
       throw new Error(error);
     }
   };

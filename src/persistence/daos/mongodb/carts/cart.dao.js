@@ -1,23 +1,25 @@
+import { logger } from "../../../../utils/logger.js";
 import MongoDao from "../mongo.dao.js";
 import { CartModel } from "./cart.model.js";
 
 export default class CartsMongoDao extends MongoDao {
-    constructor(){
+    constructor() {
         super(CartModel);
     };
-    
-    async addProdToCart(existCart, prodId){
-        try{
+
+    async addProdToCart(existCart, prodId) {
+        try {
             const newProd = {
-                "quantity" : 1,
-                "product" : prodId
+                "quantity": 1,
+                "product": prodId
             };
             existCart.products.push(newProd);
-            const response = await this.model.updateOne({_id: existCart._id}, existCart);
-
+            const response = await this.model.updateOne({ _id: existCart._id }, existCart);
+            logger.info(`Producto añadido al carrito: ${prodId}`);
             return response;
-        }catch(error){
-            console.log(error);
+        } catch (error) {
+            logger.error(`Error al agregar el producto al carrito: ${error.message}`);
+            throw new Error(error);
         };
     };
 
@@ -38,10 +40,11 @@ export default class CartsMongoDao extends MongoDao {
             }
             existCart.products.splice(productIndex, 1);
             const updatedCart = await existCart.save();
+            logger.info(`Producto eliminado del carrito: ${productToRemove._id}`);
             return updatedCart;
         } catch (error) {
-            console.error(error);
-            throw new Error("Error removing product from cart");
+            logger.error(`Error al eliminar producto del carrito: ${error.message}`);
+            throw new Error(error);
         };
     };
 
@@ -52,11 +55,11 @@ export default class CartsMongoDao extends MongoDao {
             }
             cart.products = [];
             const updatedCart = await cart.save();
+            logger.info(`Carrito vaciado: ${cart._id}`);
             return updatedCart;
         } catch (error) {
-            console.error(error);
-            throw new Error("Error clearing cart");
+            logger.error(`Error al vaciar el carrito: ${error.message}`);
+            throw new Error(error);
         };
     };
-    
 };

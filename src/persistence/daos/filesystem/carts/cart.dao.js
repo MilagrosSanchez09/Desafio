@@ -1,4 +1,5 @@
 import fs from "fs";
+import { logger } from "../../../../utils/logger.js";
 
 export default class CartFsDao {
   constructor(path) {
@@ -24,7 +25,7 @@ export default class CartFsDao {
         return [];
       }
     } catch (error) {
-      console.log(error);
+      logger.error(`Error al obtener todos los productos del carrito: ${error}`);
     }
   }
 
@@ -37,7 +38,7 @@ export default class CartFsDao {
       }
       return false;
     } catch (error) {
-      console.log(error);
+      logger.error(`Error al obtener el producto del carrito por ID: ${id}, error: ${error}`);
     }
   }
 
@@ -52,7 +53,7 @@ export default class CartFsDao {
       await fs.promises.writeFile(this.path, JSON.stringify(itemsFile));
       return item;
     } catch (error) {
-      console.log(error);
+      logger.error(`Error al crear el item del carrito: ${error}`);
     }
   }
 
@@ -60,7 +61,6 @@ export default class CartFsDao {
     try {
       const itemsFile = await this.getAll();
       const index = itemsFile.findIndex((item) => item.id === id);
-      console.log("index:::", index);
       if (index === -1) {
         throw new Error(`Id ${id} not found`);
       } else {
@@ -68,7 +68,7 @@ export default class CartFsDao {
       }
       await fs.promises.writeFile(this.path, JSON.stringify(itemsFile));
     } catch (error) {
-      console.log(error);
+      logger.error(`Error al actualizar el item del carrito con ID ${id}: ${error}`);
     }
   }
 
@@ -82,7 +82,7 @@ export default class CartFsDao {
         throw new Error(`Item id: ${id} not found`);
       }
     } catch (error) {
-      console.log(error);
+      logger.error(`Error al eliminar el producto del carrito con ID ${id}: ${error}`);
     }
   }
 }

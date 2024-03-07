@@ -3,7 +3,7 @@ import { UserModel } from "./user.model.js";
 import { createHash, isValidPassword } from "../../../../utils/utils.js";
 import jwt from "jsonwebtoken";
 import config from "../../../../config/config.js";
-import { tr } from "@faker-js/faker";
+import { logger } from "../../../../utils/logger.js";
 
 const SECRET_KEY_JWT = config.SECRET_KEY_JWT;
 
@@ -22,17 +22,24 @@ export default class UserMongoDao extends MongoDao {
         return token;
     };
 
-    async register(user) {
-        try{
+    async register(user, role) {
+        try {
             const { email, password } = user;
             const existUser = await this.model.findOne({ email });
-            if(!existUser)
-                return await this.model.create({
-                   ...user,
-                   password: createHash(password) 
+            if (!existUser) {
+                const newUser = await this.model.create({
+                    ...user,
+                    role: role || 'user',
+                    password: createHash(password)
                 });
-            else return null;
-        }catch(error){
+                logger.info(`Usuario registrado exitosamente: ${email}`);
+                return newUser;
+            } else {
+                logger.error(`El usuario ya existe: ${email}`);
+                return null;
+            }
+        } catch (error) {
+            logger.error(`Error al registrar el usuario: ${error.menssage}`);
             throw new Error(error.message);
         };
     };
@@ -42,62 +49,72 @@ export default class UserMongoDao extends MongoDao {
             const { email, password } = user;
             const userExist = await this.getByEmail(email);
             if (userExist) {
-              const passValid = isValidPassword(userExist, password);
-              if (!passValid) return false;
-              else return this.generateToken(userExist, "15m");
+                const passValid = isValidPassword(userExist, password);
+                if (!passValid) return false;
+                else {
+                    const token = this.generateToken(userExist, "15m");
+                    logger.info(`Usuario autenticado exitosamente: ${email}`);
+                    return token;
+                }
             }
             return false;
-          } catch (error) {
+        } catch (error) {
+            logger.error(`Error al iniciar sesión: ${error.message}`);
             throw new Error(error.message);
-          };
+        };
     };
-    
 
-      async getByEmail(email) {
+    async getByEmail(email) {
         try {
             const user = await this.model.findOne({ email });
             if (!user) {
-                console.log("Usuario no encontrado para el email:", email);
+                logger.warn(`Usuario no encontrado para el email: ${email}`);
                 return null;
             };
-            console.log("Usuario encontrado:", user.email);
+            logger.info(`Usuario encontrado pra el email: ${email}`);
             return user;
         } catch (error) {
-            console.log("Error en getByEmail:", error);
+            logger.error(`Error al buscar usuario por email: ${error.menssage}`);
             throw error;
         };
     };
-    
+
     async resetPassword(user) {
-        try{
+        try {
             const { email } = user;
             const userExist = await this.getByEmail(email);
-            if(userExist){
-                return (
-                    this.generateToken(userExist, "1h")
-                );
-            }else {
+            if (userExist) {
+                const token = this.generateToken(userExist, "1h");
+                await this.model.updateOne(
+                    { email: email },
+                    { resetPasswordToken: token, resetPasswordExpires: Date.now() + 3600000 }
+                )
+                logger.info(`Solicitud de restablecimiento de contraseña generada para el usuario: ${email}`);
+                return token;
+            } else {
+                logger.warn(`No se pudo encontrar el usuario para la solicitud: ${email}`);
                 return false;
             };
-        }catch(error){
+        } catch (error) {
+            logger.error(`Error al restrablecer la contraseña: ${error.menssage}`);
             throw new Error(error.menssage);
         };
     };
 
     async updatePassword(user, password) {
-        try{
+        try {
             const isEqual = isValidPassword(user, password);
-            if(isEqual){
+            if (isEqual) {
                 return false
-            }else {
+            } else {
                 const newPass = createHash(password);
                 return (
                     await this.update(user_id, { password: newPass })
                 );
             };
-        }catch(error){
+        } catch (error) {
+            logger.error(`Error al actualizar la contraseña: ${error.message}`);
             throw new Error(error.menssage);
         };
     };
-    
 };
